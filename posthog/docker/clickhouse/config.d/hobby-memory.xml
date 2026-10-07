@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <clickhouse>
-    <max_server_memory_usage>2147483648</max_server_memory_usage>
-    <max_server_memory_usage_to_ram_ratio>0.25</max_server_memory_usage_to_ram_ratio>
+    <!-- The ratio applies to the container's 2g cgroup limit, not host RAM. -->
+    <max_server_memory_usage>1610612736</max_server_memory_usage>
+    <max_server_memory_usage_to_ram_ratio>0.8</max_server_memory_usage_to_ram_ratio>
     <mark_cache_size>268435456</mark_cache_size>
     <uncompressed_cache_size>268435456</uncompressed_cache_size>
 </clickhouse>
