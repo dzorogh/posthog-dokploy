@@ -172,7 +172,8 @@ services:
                 condition: service_started
     web:
         restart: unless-stopped
-        mem_limit: 1g
+        # Django migrations on deploy swap heavily at 1g.
+        mem_limit: 2g
         extends:
             file: docker-compose.base.yml
             service: web
