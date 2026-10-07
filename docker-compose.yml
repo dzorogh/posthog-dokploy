@@ -172,8 +172,8 @@ services:
                 condition: service_started
     web:
         restart: unless-stopped
-        # Django migrations on deploy swap heavily at 1g.
-        mem_limit: 2g
+        # Each granian worker peaks near 1g; the default of 4 workers OOM-loops here.
+        mem_limit: 2560m
         extends:
             file: docker-compose.base.yml
             service: web
@@ -183,6 +183,7 @@ services:
             - ./compose:/compose
         image: $REGISTRY_URL:$POSTHOG_APP_TAG
         environment:
+            GRANIAN_WORKERS: '2'
             SITE_URL: https://$DOMAIN
             LIVESTREAM_HOST: 'https://${DOMAIN}/livestream'
             SECRET_KEY: $POSTHOG_SECRET
