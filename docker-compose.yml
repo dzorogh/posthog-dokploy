@@ -16,6 +16,7 @@ x-logging: &default-logging
 
 services:
     db:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: db
@@ -28,6 +29,7 @@ services:
         mem_limit: 512m
 
     redis7:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: redis7
@@ -36,6 +38,7 @@ services:
             - redis7-data:/data
 
     valkey:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: valkey
@@ -46,7 +49,7 @@ services:
         extends:
             file: docker-compose.base.yml
             service: clickhouse
-        restart: on-failure
+        restart: unless-stopped
         logging: *default-logging
         depends_on:
             - kafka
@@ -63,6 +66,7 @@ services:
             - clickhouse-data:/var/lib/clickhouse
 
     zookeeper:
+        restart: unless-stopped
         mem_limit: 256m
         extends:
             file: docker-compose.base.yml
@@ -76,6 +80,7 @@ services:
             - zookeeper-data:/data
             - zookeeper-logs:/logs
     kafka:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: kafka
@@ -109,6 +114,7 @@ services:
             - redpanda-data:/var/lib/redpanda/data
 
     worker:
+        restart: unless-stopped
         mem_limit: 1g
         extends:
             file: docker-compose.base.yml
@@ -165,6 +171,7 @@ services:
             browserless:
                 condition: service_started
     web:
+        restart: unless-stopped
         mem_limit: 1g
         extends:
             file: docker-compose.base.yml
@@ -222,6 +229,7 @@ services:
             - personhog-router
 
     plugins:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: plugins
@@ -262,6 +270,7 @@ services:
             - seaweedfs
 
     ingestion-general:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: ingestion-general
@@ -284,6 +293,7 @@ services:
             - personhog-router
 
     ingestion-sessionreplay:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: ingestion-sessionreplay
@@ -302,6 +312,7 @@ services:
             - seaweedfs
 
     recording-api:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: recording-api
@@ -327,6 +338,7 @@ services:
             - seaweedfs
 
     ingestion-error-tracking:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: ingestion-error-tracking
@@ -341,6 +353,7 @@ services:
             - kafka
 
     ingestion-logs:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: ingestion-logs
@@ -354,6 +367,7 @@ services:
             - kafka
 
     ingestion-traces:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: ingestion-traces
@@ -367,6 +381,7 @@ services:
             - kafka
 
     proxy:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: proxy
@@ -390,7 +405,7 @@ services:
         # Dev/CI stacks use SeaweedFS-backed objectstorage from docker-compose.base.yml,
         # but hobby keeps MinIO so bin/migrate-storage-hobby still has a MinIO source.
         image: minio/minio:RELEASE.2025-04-22T22-12-26Z
-        restart: on-failure
+        restart: unless-stopped
         environment:
             MINIO_ROOT_USER: object_storage_root_user
             MINIO_ROOT_PASSWORD: object_storage_root_password
@@ -404,7 +419,7 @@ services:
         extends:
             file: docker-compose.base.yml
             service: seaweedfs
-        restart: on-failure
+        restart: unless-stopped
         logging: *default-logging
         volumes:
             - seaweedfs:/data
@@ -424,7 +439,7 @@ services:
     browserless:
         # Renders image exports and heatmap screenshots (no browser ships in the PostHog image).
         image: ghcr.io/browserless/chromium:v2.51.2
-        restart: on-failure
+        restart: unless-stopped
         logging: *default-logging
         environment:
             TOKEN: ${BROWSERLESS_SECRET:-$POSTHOG_SECRET}
@@ -442,6 +457,7 @@ services:
 
     # Temporal containers
     temporal:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: temporal
@@ -458,6 +474,7 @@ services:
         depends_on:
             - temporal
     temporal-django-worker:
+        restart: unless-stopped
         command: /compose/temporal-django-worker
         extends:
             file: docker-compose.base.yml
@@ -499,24 +516,28 @@ services:
             - browserless
 
     capture:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: capture
         logging: *default-logging
 
     capture-logs:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: capture-logs
         logging: *default-logging
 
     replay-capture:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: replay-capture
         logging: *default-logging
 
     property-defs-rs:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: property-defs-rs
@@ -528,6 +549,7 @@ services:
                 condition: service_healthy
 
     livestream:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: livestream
@@ -538,6 +560,7 @@ services:
             - ./posthog/docker/livestream/configs-hobby.yml:/configs/configs.yml
 
     personhog-replica:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: personhog-replica
@@ -549,6 +572,7 @@ services:
                 condition: service_healthy
 
     personhog-router:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: personhog-router
@@ -557,6 +581,7 @@ services:
             - personhog-replica
 
     feature-flags:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: feature-flags
@@ -566,6 +591,7 @@ services:
             - redis7
 
     hypercache-server:
+        restart: unless-stopped
         extends:
             file: docker-compose.base.yml
             service: hypercache-server
@@ -641,7 +667,7 @@ services:
 
     cymbal:
         image: ghcr.io/posthog/posthog/cymbal:master
-        restart: on-failure
+        restart: unless-stopped
         logging: *default-logging
         volumes:
             - ./share:/share
@@ -681,7 +707,7 @@ services:
     # the narrower env than cymbal above.
     cymbal-resolution:
         image: ghcr.io/posthog/posthog/cymbal:master
-        restart: on-failure
+        restart: unless-stopped
         logging: *default-logging
         environment:
             CYMBAL_MODE: resolution
