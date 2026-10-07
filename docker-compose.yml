@@ -179,6 +179,10 @@ services:
             service: web
         command: /compose/start
         logging: *default-logging
+        networks:
+            default:
+                aliases:
+                    - posthog-web
         volumes:
             - ./compose:/compose
         image: $REGISTRY_URL:$POSTHOG_APP_TAG
@@ -393,6 +397,8 @@ services:
         volumes:
             - caddy-data:/data
             - caddy-config:/config
+        # On dokploy-network, `web` resolves to other projects' web services.
+        command: -c 'set -x && echo "$$CADDYFILE" | sed "s/reverse_proxy web:8000/reverse_proxy posthog-web:8000/" > /etc/caddy/Caddyfile && echo "$$CADDY_EXTRA_CONFIG" >> /etc/caddy/Caddyfile && exec caddy run -c /etc/caddy/Caddyfile'
         environment:
             CADDY_TLS_BLOCK: ''
             CADDY_HOST: ':80'
