@@ -259,7 +259,7 @@ services:
             BEHAVIORAL_COHORTS_DATABASE_URL: 'postgres://posthog:posthog@db:5432/posthog'
             OTEL_EXPORTER_OTLP_ENDPOINT: ''
         volumes:
-            - ./share:/share
+            - share:/share
         depends_on:
             - db
             - redis7
@@ -588,9 +588,26 @@ services:
             file: docker-compose.base.yml
             service: feature-flags
         logging: *default-logging
+        volumes:
+            - share:/share
         depends_on:
-            - db
-            - redis7
+            db:
+                condition: service_started
+            redis7:
+                condition: service_started
+            geoip-init:
+                condition: service_completed_successfully
+
+    geoip-init:
+        # Dokploy re-clones the repo on every deploy, so ./share is always empty.
+        # The app image ships the GeoIP database; copy it into a shared volume.
+        image: $REGISTRY_URL:$POSTHOG_APP_TAG
+        user: root
+        logging: *default-logging
+        entrypoint: sh
+        command: -c 'cp /code/share/GeoLite2-City.mmdb /share/GeoLite2-City.mmdb'
+        volumes:
+            - share:/share
 
     hypercache-server:
         restart: unless-stopped
@@ -672,7 +689,7 @@ services:
         restart: unless-stopped
         logging: *default-logging
         volumes:
-            - ./share:/share
+            - share:/share
         environment:
             KAFKA_HOSTS: 'kafka:9092'
             OBJECT_STORAGE_BUCKET: posthog
@@ -734,6 +751,7 @@ networks:
         external: true
 
 volumes:
+    share:
     zookeeper-data:
     zookeeper-datalog:
     zookeeper-logs:
