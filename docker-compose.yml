@@ -45,7 +45,7 @@ services:
         logging: *default-logging
 
     clickhouse:
-        mem_limit: 2g
+        mem_limit: 4g
         extends:
             file: docker-compose.base.yml
             service: clickhouse
@@ -85,7 +85,7 @@ services:
             file: docker-compose.base.yml
             service: kafka
         logging: *default-logging
-        mem_limit: 1280m
+        mem_limit: 2g
         depends_on:
             - zookeeper
         command:
@@ -116,7 +116,7 @@ services:
     worker:
         restart: unless-stopped
         # Celery worker and beat each idle near 600MiB; at 1g they OOM-loop.
-        mem_limit: 2g
+        mem_limit: 3g
         extends:
             file: docker-compose.base.yml
             service: worker
@@ -176,17 +176,13 @@ services:
                 condition: service_started
     web:
         restart: unless-stopped
-        # Each granian worker peaks near 1g; the default of 4 workers OOM-loops here.
-        mem_limit: 2560m
+        # Each granian worker peaks near 1g; the default of 4 workers OOM-loops at 2g.
+        mem_limit: 3g
         extends:
             file: docker-compose.base.yml
             service: web
         command: /compose/start
         logging: *default-logging
-        networks:
-            default:
-                aliases:
-                    - posthog-web
         volumes:
             - ./compose:/compose
         image: $REGISTRY_URL:$POSTHOG_APP_TAG
@@ -396,19 +392,17 @@ services:
             file: docker-compose.base.yml
             service: proxy
         logging: *default-logging
-        expose:
-            - '80'
+        ports:
+            - '80:80'
+            - '443:443'
+            - '443:443/udp'
         volumes:
             - caddy-data:/data
             - caddy-config:/config
-        # On dokploy-network, `web` resolves to other projects' web services.
-        command: -c 'set -x && echo "$$CADDYFILE" | sed "s/reverse_proxy web:8000/reverse_proxy posthog-web:8000/" > /etc/caddy/Caddyfile && echo "$$CADDY_EXTRA_CONFIG" >> /etc/caddy/Caddyfile && exec caddy run -c /etc/caddy/Caddyfile'
         environment:
             CADDY_TLS_BLOCK: ''
-            CADDY_HOST: ':80'
-        networks:
-            - default
-            - dokploy-network
+            # A bare hostname makes Caddy obtain and renew the Let's Encrypt certificate itself.
+            CADDY_HOST: $DOMAIN
         depends_on:
             - web
             - livestream
@@ -759,8 +753,6 @@ services:
 
 networks:
     otel_network:
-    dokploy-network:
-        external: true
 
 volumes:
     share:

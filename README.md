@@ -1,10 +1,22 @@
-# PostHog hobby stack for Dokploy
+# PostHog hobby stack
 
-Official PostHog hobby compose, adapted so Traefik (Dokploy) terminates TLS.
+Official PostHog hobby compose, adapted for a dedicated server at `hog.oryxbms.com`
+(Timeweb `nl-1`, 8 vCPU / 16 GB / 160 GB NVMe).
 
-- Caddy listens on `:80` inside the compose network and routes capture/flags/web.
-- Host ports 80/443 and other public infrastructure ports are not published.
-- Kafka/ClickHouse memory is capped for a shared 16GB VPS.
+- Caddy publishes `80`/`443` and obtains the Let's Encrypt certificate for `$DOMAIN`.
+- App images are pinned by digest in `.env` (`POSTHOG_APP_TAG`, `POSTHOG_NODE_TAG`)
+  so a restart never pulls a newer `latest` with unapplied migrations.
 - Elasticsearch and Temporal UI are omitted.
 
-Do not commit secrets. Put `POSTHOG_SECRET` and `ENCRYPTION_SALT_KEYS` in Dokploy env.
+## Deploy
+
+```bash
+cd /opt/posthog
+git pull
+docker compose up -d --remove-orphans
+# Bind-mounted ClickHouse config/UDFs are re-read only on restart.
+docker compose restart clickhouse
+```
+
+Do not commit secrets. `POSTHOG_SECRET` and `ENCRYPTION_SALT_KEYS` live only in
+`/opt/posthog/.env` on the server; changing them breaks encrypted Postgres fields.
