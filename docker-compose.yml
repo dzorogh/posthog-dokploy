@@ -399,10 +399,8 @@ services:
         volumes:
             - caddy-data:/data
             - caddy-config:/config
-        environment:
-            CADDY_TLS_BLOCK: ''
-            # A bare hostname makes Caddy obtain and renew the Let's Encrypt certificate itself.
-            CADDY_HOST: $DOMAIN
+        # CADDYFILE interpolates CADDY_HOST from .env at render time, not from this
+        # service's environment. A bare hostname there makes Caddy manage TLS itself.
         depends_on:
             - web
             - livestream

@@ -3,8 +3,8 @@
 Official PostHog hobby compose, adapted for a dedicated server at `hog.oryxbms.com`
 (Timeweb `nl-1`, 8 vCPU / 16 GB / 160 GB NVMe).
 
-- Caddy publishes `80`/`443` and obtains the Let's Encrypt certificate for `$DOMAIN`.
-- App images are pinned by digest in `.env` (`POSTHOG_APP_TAG`, `POSTHOG_NODE_TAG`)
+- Caddy publishes `80`/`443`; set `CADDY_HOST=hog.oryxbms.com` in `.env` so it obtains the Let's Encrypt certificate.
+- App images are pinned to local tags in `.env` (`POSTHOG_APP_TAG`, `POSTHOG_NODE_TAG`)
   so a restart never pulls a newer `latest` with unapplied migrations.
 - Elasticsearch and Temporal UI are omitted.
 
