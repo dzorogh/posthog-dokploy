@@ -115,12 +115,16 @@ services:
 
     worker:
         restart: unless-stopped
-        mem_limit: 1g
+        # Celery worker and beat each idle near 600MiB; at 1g they OOM-loop.
+        mem_limit: 2g
         extends:
             file: docker-compose.base.yml
             service: worker
         logging: *default-logging
         environment:
+            # Celery defaults to one child per CPU (8 here), far more than hobby needs.
+            WEB_CONCURRENCY: '2'
+            CELERY_MAX_MEMORY_PER_CHILD: '400000'
             SITE_URL: https://$DOMAIN
             SECRET_KEY: $POSTHOG_SECRET
             OBJECT_STORAGE_ACCESS_KEY_ID: 'object_storage_root_user'
